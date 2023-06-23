@@ -28,27 +28,68 @@ const Map = () => {
     const hoursAndMinutesUntil = (date) => {
       const now = new Date();
       const diff = date.valueOf() - now.valueOf();
+
+      if (diff < 0) {
+        return "Now";
+      }
+
       const hours = Math.floor(diff / (1000 * 60 * 60));
       const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-      return `${hours}h ${minutes}m`;
+      return `in ${hours}h ${minutes}m`;
     };
 
-    if (map.current) {
-      map.current.on("load", () => {
-        map.current.on("moveend", () => {
-          console.log(
-            `Map moved to ${map.current.getCenter()} with zoom ${map.current.getZoom()}`
-          );
-        });
+    //if (map.current) return; // initialize map only once
 
-        Object.keys(taxiStations).forEach((stationKey) => {
-          const station = taxiStations[stationKey];
-          const popup = new maplibregl.Popup({
-            offset: 40,
-            maxWidth: 360,
-            anchor: "bottom",
-          }).setHTML(
-            `<h2>${station.name}</h2>
+    if (map.current) return;
+
+    map.current = new maplibregl.Map({
+      container: mapContainer.current,
+      style: {
+        id: "43f36e14-e3f5-43c1-84c0-50a9c80dc5c7",
+        name: "MapLibre",
+        zoom: 0,
+        pitch: 0,
+        center: [41.884579601743276, -87.6279871036212],
+        glyphs:
+          "https://cdn.jsdelivr.net/gh/piemadd/fonts@54b954f510dc79e04ae47068c5c1f2ee39a69216/_output/{fontstack}/{range}.pbf",
+        layers: layers("protomaps", "black"),
+        bearing: 0,
+        sources: {
+          protomaps: {
+            type: "vector",
+            tiles: [
+              "https://tilea.piemadd.com/tiles/{z}/{x}/{y}.mvt",
+              "https://tileb.piemadd.com/tiles/{z}/{x}/{y}.mvt",
+              "https://tilec.piemadd.com/tiles/{z}/{x}/{y}.mvt",
+              "https://tiled.piemadd.com/tiles/{z}/{x}/{y}.mvt",
+              //"http://10.0.0.237:8081/basemap/{z}/{x}/{y}.mvt"
+            ],
+            maxzoom: 13,
+          },
+        },
+        version: 8,
+        metadata: {},
+      },
+      center: [lng, lat],
+      zoom: zoom,
+      maxZoom: 16,
+    });
+
+    map.current.on("load", () => {
+      map.current.on("moveend", () => {
+        console.log(
+          `Map moved to ${map.current.getCenter()} with zoom ${map.current.getZoom()}`
+        );
+      });
+
+      Object.keys(taxiStations).forEach((stationKey) => {
+        const station = taxiStations[stationKey];
+        const popup = new maplibregl.Popup({
+          offset: 40,
+          maxWidth: 360,
+          anchor: "bottom",
+        }).setHTML(
+          `<h2>${station.name}</h2>
             <br/>
             <p><a href='${
               station.mapsLink
@@ -84,7 +125,7 @@ const Map = () => {
                   .map((departure) => {
                     return `<li class='station_popup'>${dateFormatter.format(
                       new Date(departure)
-                    )} <i>(in ${hoursAndMinutesUntil(
+                    )} <i>(${hoursAndMinutesUntil(
                       new Date(departure)
                     )})</i></li>`;
                   })
@@ -94,73 +135,39 @@ const Map = () => {
               })
               .join("")}
             `
-          );
+        );
 
-          new maplibregl.Marker({
-            color: station.color,
-            properties: station,
-          })
-            .setLngLat([station.coordinates[1], station.coordinates[0]])
-            .setPopup(popup)
-            .addTo(map.current);
-        });
-
-        map.current.addSource("lines", {
-          type: "geojson",
-          data: mapLines,
-        });
-
-        map.current.addLayer({
-          id: "route",
-          type: "line",
-          source: "lines",
-          layout: {
-            "line-join": "round",
-            "line-round-limit": 0.1,
-          },
-          paint: {
-            "line-color": "#fdd323",
-            "line-width": 4,
-          },
-        });
+        new maplibregl.Marker({
+          color: station.color,
+          properties: station,
+        })
+          .setLngLat([station.coordinates[1], station.coordinates[0]])
+          .setPopup(popup)
+          .addTo(map.current);
       });
-    }
 
-    map.current = new maplibregl.Map({
-      container: mapContainer.current,
-      style: {
-        id: "43f36e14-e3f5-43c1-84c0-50a9c80dc5c7",
-        name: "MapLibre",
-        zoom: 0,
-        pitch: 0,
-        center: [41.884579601743276, -87.6279871036212],
-        glyphs:
-          "https://cdn.jsdelivr.net/gh/piemadd/fonts@54b954f510dc79e04ae47068c5c1f2ee39a69216/_output/{fontstack}/{range}.pbf",
-        layers: layers("protomaps", "black"),
-        bearing: 0,
-        sources: {
-          protomaps: {
-            type: "vector",
-            tiles: [
-              "https://tilea.piemadd.com/tiles/{z}/{x}/{y}.mvt",
-              "https://tileb.piemadd.com/tiles/{z}/{x}/{y}.mvt",
-              "https://tilec.piemadd.com/tiles/{z}/{x}/{y}.mvt",
-              "https://tiled.piemadd.com/tiles/{z}/{x}/{y}.mvt",
-              //"http://10.0.0.237:8081/basemap/{z}/{x}/{y}.mvt"
-            ],
-            maxzoom: 13,
-          },
+      map.current.addSource("lines", {
+        type: "geojson",
+        data: mapLines,
+      });
+
+      map.current.addLayer({
+        id: "route",
+        type: "line",
+        source: "lines",
+        layout: {
+          "line-join": "round",
+          "line-round-limit": 0.1,
         },
-        version: 8,
-        metadata: {},
-      },
-      center: [lng, lat],
-      zoom: zoom,
-      maxZoom: 16,
+        paint: {
+          "line-color": "#fdd323",
+          "line-width": 4,
+        },
+      });
     });
 
     console.log("Map initialized");
-  }, [lat, lng, zoom]);
+  });
 
   return (
     <>

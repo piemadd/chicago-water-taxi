@@ -15,9 +15,14 @@ const App = () => {
   const hoursAndMinutesUntil = (date) => {
     const now = new Date();
     const diff = date.valueOf() - now.valueOf();
+
+    if (diff < 0) {
+      return "Now";
+    }
+
     const hours = Math.floor(diff / (1000 * 60 * 60));
     const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-    return `${hours}h ${minutes}m`;
+    return `in ${hours}h ${minutes}m`;
   };
 
   return (
@@ -28,7 +33,7 @@ const App = () => {
           marginBottom: "8px",
         }}
       >
-        v0.1.0 | Made by <a href='https://piemadd.com/'>Piero</a>
+        v0.1.3 | Made by <a href='https://piemadd.com/'>Piero</a>
       </p>
       {
         <>
@@ -131,7 +136,7 @@ const App = () => {
                                   <li key={departure}>
                                     {dateFormatter.format(new Date(departure))}{" "}
                                     <i>
-                                      (in{" "}
+                                      (
                                       {hoursAndMinutesUntil(
                                         new Date(departure)
                                       )}
