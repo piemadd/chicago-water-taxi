@@ -1,11 +1,11 @@
 export const taxiStations = {
   ogilvie_union: {
-    name: "Ogilvie/Union (West Loop)",
+    name: "Ogilvie/Union (Riverside Plaza & Madison)",
     coordinates: [
       41.88224963761097,
       -87.63860020208031
     ],
-    mapsLink: "https://goo.gl/maps/58X5WBvWvwK2oeeZA",
+    mapsLink: "https://goo.gl/maps/QtLZUMW7D6PmmNgq8",
     color: "#277bb3",
     textColor: "#fff",
     to: {
@@ -31,12 +31,12 @@ export const taxiStations = {
     }
   },
   michigan: {
-    name: "Michigan Avenue (Wrigley Building)",
+    name: "Michigan Avenue (Wrigley Building & Rush)",
     coordinates: [
       41.88929991088218,
       -87.62521941056612
     ],
-    mapsLink: "https://goo.gl/maps/DuRcudUVJ4VeAo4y8",
+    mapsLink: "https://goo.gl/maps/AnDKWCQkLZCEj5sT9",
     color: "#4fd5fc",
     textColor: "#181a1b",
     to: {
@@ -67,7 +67,7 @@ export const taxiStations = {
       41.85714382088655,
       -87.63499474723132
     ],
-    mapsLink: "https://goo.gl/maps/Ab9v3b5uFuzSuier8",
+    mapsLink: "https://goo.gl/maps/sNp2rDfcRrUsRWjj9",
     color: "#522298",
     textColor: "#fff",
     to: {

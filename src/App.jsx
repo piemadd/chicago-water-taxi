@@ -27,13 +27,13 @@ const App = () => {
 
   return (
     <>
-      <h1>Chicago Water Taxi</h1>
+      <h1>Chicago Water Taxi Info (Unofficial)</h1>
       <p
         style={{
           marginBottom: "8px",
         }}
       >
-        v0.1.6 | Made by{" "}
+        v0.2.0 | Made by{" "}
         <a href='https://piemadd.com/' target='_blank' rel='noreferrer'>
           Piero
         </a>
@@ -74,88 +74,98 @@ const App = () => {
               </button>
             </div>
             {dataSource === "table" ? (
-              <section className='destinations'>
-                {Object.keys(taxiStations).map((stationKey) => {
-                  const station = taxiStations[stationKey];
-                  return (
-                    <div
-                      className='station'
-                      key={stationKey}
-                      style={{
-                        backgroundColor: station.color,
-                        color: station.textColor,
-                      }}
-                    >
-                      <h2>{station.name}</h2>
-                      <p>
-                        <a
-                          href={station.mapsLink}
-                          target='_blank'
-                          rel='noreferrer'
-                          style={{
-                            color: station.textColor,
-                          }}
-                        >
-                          Directions
-                        </a>
-                      </p>
-                      <h3>Upcoming Departures:</h3>
-                      {Object.keys(station.to).map((destKey) => {
-                        const dest = station.to[destKey];
-                        const filteredDepartures = dest.departures.filter(
-                          (departure) => {
-                            return (
-                              new Date(departure).valueOf() >
-                              Date.now() - 1000 * 60 * 5
-                            );
-                          }
-                        );
-                        const departures = filteredDepartures.slice(0, 6);
-
-                        if (departures.length === 0) {
-                          return (
-                            <div key={destKey}>
-                              <h4>To {taxiStations[destKey].name}:</h4>
-                              <p>No upcoming departures</p>
-                            </div>
-                          );
-                        }
-
-                        return (
-                          <div
-                            key={destKey}
+              <>
+                <p>
+                  Fares on the water taxi are currently $6 one way, with tickets
+                  being available at the Union/Ogilvie dock and on taxis.
+                </p>
+                <h2>Water Taxi Schedule:</h2>
+                <section className='destinations'>
+                  {Object.keys(taxiStations).map((stationKey) => {
+                    const station = taxiStations[stationKey];
+                    return (
+                      <div
+                        className='station'
+                        key={stationKey}
+                        style={{
+                          backgroundColor: station.color,
+                          color: station.textColor,
+                        }}
+                      >
+                        <h2>{station.name}</h2>
+                        <p>
+                          <a
+                            href={station.mapsLink}
+                            target='_blank'
+                            rel='noreferrer'
                             style={{
-                              backgroundColor: taxiStations[destKey].color,
-                              color: taxiStations[destKey].textColor,
+                              color: station.textColor,
                             }}
                           >
-                            <h4>To {taxiStations[destKey].name}:</h4>
-                            <p>
-                              Travel time: ~{station.to[destKey].duration} mins
-                            </p>
-                            <ul>
-                              {departures.map((departure) => {
-                                return (
-                                  <li key={departure}>
-                                    {dateFormatter.format(new Date(departure))}{" "}
-                                    <i>
-                                      (
-                                      {hoursAndMinutesUntil(
+                            Directions
+                          </a>
+                        </p>
+                        <h3>Upcoming Departures:</h3>
+                        {Object.keys(station.to).map((destKey) => {
+                          const dest = station.to[destKey];
+                          const filteredDepartures = dest.departures.filter(
+                            (departure) => {
+                              return (
+                                new Date(departure).valueOf() >
+                                Date.now() - 1000 * 60 * 5
+                              );
+                            }
+                          );
+                          const departures = filteredDepartures.slice(0, 6);
+
+                          if (departures.length === 0) {
+                            return (
+                              <div key={destKey}>
+                                <h4>To {taxiStations[destKey].name}:</h4>
+                                <p>No upcoming departures</p>
+                              </div>
+                            );
+                          }
+
+                          return (
+                            <div
+                              key={destKey}
+                              style={{
+                                backgroundColor: taxiStations[destKey].color,
+                                color: taxiStations[destKey].textColor,
+                              }}
+                            >
+                              <h4>To {taxiStations[destKey].name}:</h4>
+                              <p>
+                                Travel time: ~{station.to[destKey].duration}{" "}
+                                mins
+                              </p>
+                              <ul>
+                                {departures.map((departure) => {
+                                  return (
+                                    <li key={departure}>
+                                      {dateFormatter.format(
                                         new Date(departure)
-                                      )}
-                                      )
-                                    </i>
-                                  </li>
-                                );
-                              })}
-                            </ul>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  );
-                })}
-              </section>
+                                      )}{" "}
+                                      <i>
+                                        (
+                                        {hoursAndMinutesUntil(
+                                          new Date(departure)
+                                        )}
+                                        )
+                                      </i>
+                                    </li>
+                                  );
+                                })}
+                              </ul>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    );
+                  })}
+                </section>
+              </>
             ) : null}
             {dataSource === "map" ? <Map /> : null}
             <p
