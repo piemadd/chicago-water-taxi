@@ -33,7 +33,10 @@ const App = () => {
           marginBottom: "8px",
         }}
       >
-        v0.1.3 | Made by <a href='https://piemadd.com/'>Piero</a>
+        v0.1.6 | Made by{" "}
+        <a href='https://piemadd.com/' target='_blank' rel='noreferrer'>
+          Piero
+        </a>
       </p>
       {
         <>
