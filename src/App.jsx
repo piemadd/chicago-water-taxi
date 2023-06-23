@@ -3,7 +3,7 @@ import Map from "./Map";
 import taxiStations from "./stations";
 
 const App = () => {
-  const [dataSource, setDataSource] = useState("map");
+  const [dataSource, setDataSource] = useState("table");
 
   const dateFormatter = new Intl.DateTimeFormat("en-US", {
     month: "short",
