@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Map from "./Map";
 import taxiStations from "./stations";
 
 const App = () => {
   const [dataSource, setDataSource] = useState("table");
+  const [now, setNow] = useState(new Date());
 
   const dateFormatter = new Intl.DateTimeFormat("en-US", {
     month: "short",
@@ -13,7 +14,6 @@ const App = () => {
   });
 
   const hoursAndMinutesUntil = (date) => {
-    const now = new Date();
     const diff = date.valueOf() - now.valueOf();
 
     if (diff < 0) {
@@ -25,6 +25,12 @@ const App = () => {
     return `in ${hours}h ${minutes}m`;
   };
 
+  useEffect(() => {
+    setInterval(() => {
+      setNow(new Date());
+    }, 5000);
+  }, []);
+
   return (
     <>
       <h1>Chicago Water Taxi Info (Unofficial)</h1>
@@ -33,7 +39,7 @@ const App = () => {
           marginBottom: "8px",
         }}
       >
-        v0.2.0 | Made by{" "}
+        v0.2.1 | Made by{" "}
         <a href='https://piemadd.com/' target='_blank' rel='noreferrer'>
           Piero
         </a>
