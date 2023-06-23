@@ -1,47 +1,131 @@
 /* eslint-disable react/prop-types */
-import { useRef, useEffect, useState, useMemo } from "react";
+import { useRef, useEffect, useState } from "react";
 import * as pmtiles from "pmtiles";
 import layers from "protomaps-themes-base";
 import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
-import stations from "./stations.json";
-//import './map.css';
+import taxiStations from "./stations";
+import mapLines from "./lines.json";
 
-const radsToDegs = (rads) => (rads * 180) / Math.PI;
-
-const Map = (props) => {
+const Map = () => {
   const mapContainer = useRef(null);
   const map = useRef(null);
-  const [lng] = useState(-87.63142947838614);
-  const [lat] = useState(41.882913703166246);
-  const [zoom] = useState(11);
-
-  const trains = useMemo(() => props.trains ?? [], [props.trains]);
+  const [lng] = useState(-87.6298209611486);
+  const [lat] = useState(41.87433196355158);
+  const [zoom] = useState(12.67);
 
   let protocol = new pmtiles.Protocol();
   maplibregl.addProtocol("pmtiles", protocol.tile);
 
   useEffect(() => {
+    const dateFormatter = new Intl.DateTimeFormat("en-US", {
+      month: "short",
+      day: "numeric",
+      hour: "numeric",
+      minute: "numeric",
+    });
+
+    const hoursAndMinutesUntil = (date) => {
+      const now = new Date();
+      const diff = date.valueOf() - now.valueOf();
+      const hours = Math.floor(diff / (1000 * 60 * 60));
+      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+      return `${hours}h ${minutes}m`;
+    };
+
     if (map.current) {
       map.current.on("load", () => {
-        Object.values(stations).forEach((station) => {
+        map.current.on("moveend", () => {
+          console.log(
+            `Map moved to ${map.current.getCenter()} with zoom ${map.current.getZoom()}`
+          );
+        });
+
+        Object.keys(taxiStations).forEach((stationKey) => {
+          const station = taxiStations[stationKey];
+          const popup = new maplibregl.Popup({
+            offset: 40,
+            maxWidth: 360,
+            anchor: "bottom",
+          }).setHTML(
+            `<h2>${station.name}</h2>
+            <br/>
+            <p><a href='${
+              station.mapsLink
+            }' target='_blank' rel='noreferrer'>Directions</a></p>
+            <br/>
+            <h3 class='station_popup'>Upcoming Departures:</h3>
+            ${Object.keys(station.to)
+              .map((destKey) => {
+                console.log("destKey", destKey);
+                console.log("station.to", station.to[destKey]);
+                const dest = station.to[destKey];
+                const filteredDepartures = dest.departures.filter(
+                  (departure) => {
+                    return (
+                      new Date(departure).valueOf() > Date.now() - 1000 * 60 * 5
+                    );
+                  }
+                );
+                const departures = filteredDepartures.slice(0, 6);
+
+                if (departures.length === 0) {
+                  return `<h4 class='station_popup'>To ${taxiStations[destKey].name}:</h4>
+                  <p class='station_popup'>No upcoming departures</p>`;
+                }
+
+                return `
+                <h4 class='station_popup'>To ${taxiStations[destKey].name}:</h4>
+                <p class='station_popup'>Travel time: ~${
+                  station.to[destKey].duration
+                } mins</p>
+                <ul>  
+                ${departures
+                  .map((departure) => {
+                    return `<li class='station_popup'>${dateFormatter.format(
+                      new Date(departure)
+                    )} <i>(in ${hoursAndMinutesUntil(
+                      new Date(departure)
+                    )})</i></li>`;
+                  })
+                  .join("")}
+                    </ul>
+              `;
+              })
+              .join("")}
+            `
+          );
+
           new maplibregl.Marker({
-            color: "#aaaaaa",
+            color: station.color,
+            properties: station,
           })
-            .setLngLat([station.lon, station.lat])
+            .setLngLat([station.coordinates[1], station.coordinates[0]])
+            .setPopup(popup)
             .addTo(map.current);
         });
 
-        trains.forEach((train) => {
-          new maplibregl.Marker({
-            color: props.lines[train.line].color,
-          })
-            .setLngLat([train.lon, train.lat])
-            .setRotation(radsToDegs(train.heading))
-            .addTo(map.current);
+        map.current.addSource("lines", {
+          type: "geojson",
+          data: mapLines,
+        });
+
+        map.current.addLayer({
+          id: "route",
+          type: "line",
+          source: "lines",
+          layout: {
+            "line-join": "round",
+            "line-round-limit": 0.1,
+          },
+          paint: {
+            "line-color": "#fdd323",
+            "line-width": 4,
+          },
         });
       });
     }
+
     map.current = new maplibregl.Map({
       container: mapContainer.current,
       style: {
@@ -72,13 +156,38 @@ const Map = (props) => {
       },
       center: [lng, lat],
       zoom: zoom,
-      maxZoom: 15,
+      maxZoom: 16,
     });
 
     console.log("Map initialized");
-  }, [lat, lng, trains, zoom, props.lines]);
+  }, [lat, lng, zoom]);
 
-  return <div ref={mapContainer} className='map' />;
+  return (
+    <>
+      <div ref={mapContainer} className='map'></div>
+
+      <div
+        style={{
+          textAlign: "right",
+          marginBottom: "8px",
+        }}
+      >
+        Map Attribution:{" "}
+        <a href='https://protomaps.com' target='_blank' rel='noreferrer'>
+          Protomaps
+        </a>{" "}
+        |{" "}
+        <a
+          href='https://openstreetmap.org/copyright'
+          target='_blank'
+          rel='noreferrer'
+        >
+          © OpenStreetMap
+        </a>{" "}
+        | <span>© Amtraker Tiles</span>
+      </div>
+    </>
+  );
 };
 
 export default Map;

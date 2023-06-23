@@ -1,158 +1,37 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Map from "./Map";
-
-const endpoint = "https://ctaheadwaysapi.piemadd.com/all";
-
-const lines = {
-  Red: {
-    name: "Red",
-    color: "#c60c30",
-    textColor: "#ffffff",
-    destinations: ["Howard", "95th/Dan Ryan"],
-    replacements: [],
-  },
-  Purple: {
-    name: "Purple",
-    color: "#522398",
-    textColor: "#ffffff",
-    destinations: ["Linden", "Howard", "Loop"],
-    replacements: [],
-  },
-  Yellow: {
-    name: "Yellow",
-    color: "#f9e300",
-    textColor: "#000000",
-    destinations: ["Howard", "Skokie"],
-    replacements: [],
-  },
-  Blue: {
-    name: "Blue",
-    color: "#00a1de",
-    textColor: "#ffffff",
-    destinations: ["O'Hare", "Forest Park", "UIC-Halsted"],
-    replacements: [],
-  },
-  Pink: {
-    name: "Pink",
-    color: "#e27ea6",
-    textColor: "#ffffff",
-    destinations: ["Loop", "54th/Cermak"],
-    replacements: [],
-  },
-  Green: {
-    name: "Green",
-    color: "#009b3a",
-    textColor: "#ffffff",
-    destinations: ["Harlem/Lake", "Ashland/63rd", "Cottage Grove"],
-    replacements: [
-      ["Ashland/63rd", "63rd"],
-      ["Cottage Grove", "63rd"],
-    ],
-  },
-  Brown: {
-    name: "Brown",
-    color: "#633b1b",
-    textColor: "#ffffff",
-    destinations: ["Loop", "Kimball"],
-    replacements: [],
-  },
-  Orange: {
-    name: "Orange",
-    color: "#ff4f02",
-    textColor: "#ffffff",
-    destinations: ["Loop", "Midway"],
-    replacements: [],
-  },
-};
+import taxiStations from "./stations";
 
 const App = () => {
-  const [destinationHeadways, setDestinationHeadways] = useState({});
-  const [runNumbers, setRunNumbers] = useState([]);
-  const [trains, setTrains] = useState([]); //trains that are currently being displayed
-  const [loading, setLoading] = useState(true);
-  const [dataSource, setDataSource] = useState("table");
-  const [lastUpdated, setLastUpdated] = useState(null);
+  const [dataSource, setDataSource] = useState("map");
 
-  useEffect(() => {
-    const updateData = async () => {
-      const response = await fetch(endpoint);
-      const data = await response.json();
+  const dateFormatter = new Intl.DateTimeFormat("en-US", {
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "numeric",
+  });
 
-      let allDestinations = {};
-      //let allStations = {};
-      let allRunNumbers = [];
-
-      //filling in default data for non tracking trains
-      Object.keys(lines).forEach((line) => {
-        lines[line].destinations.forEach((destination) => {
-          allDestinations[`${line}-${destination}`] = {
-            line,
-            stationKey: destination,
-            headways: "N/A",
-            numOfTrains: 0,
-          };
-        });
-      });
-
-      // data for the per line sorting
-      Object.keys(data.lines).forEach((line) => {
-        const lineData = data.lines[line];
-
-        Object.keys(lineData).forEach((stationKey) => {
-          allDestinations[`${line}-${stationKey}`] = {
-            line,
-            stationKey,
-            headways:
-              lineData[stationKey].runNumbers.length === 1
-                ? `in ${Math.round(lineData[stationKey].avgHeadway)} min`
-                : `Every ~${Math.round(lineData[stationKey].avgHeadway)} min`,
-            numOfTrains: lineData[stationKey].runNumbers.length,
-          };
-
-          allRunNumbers = [
-            ...allRunNumbers,
-            ...lineData[stationKey].runNumbers,
-          ];
-        });
-      });
-
-      //removing duplicates from allRunNumbers
-      allRunNumbers = [...new Set(allRunNumbers)];
-
-      setDestinationHeadways(allDestinations);
-      //setLineHeadways(allStations);
-      setRunNumbers(allRunNumbers);
-      setTrains(Object.values(data.trains));
-      setLoading(false);
-      setLastUpdated(new Date());
-
-      setTimeout(() => updateData(), Number(data.interval));
-
-      console.log("Updated Data");
-    };
-
-    updateData();
-  }, []);
+  const hoursAndMinutesUntil = (date) => {
+    const now = new Date();
+    const diff = date.valueOf() - now.valueOf();
+    const hours = Math.floor(diff / (1000 * 60 * 60));
+    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+    return `${hours}h ${minutes}m`;
+  };
 
   return (
     <>
-      <h1>CTA System Headways</h1>
-      <p>
-        v0.2.2 | Made by <a href='https://piemadd.com/'>Piero</a>
+      <h1>Chicago Water Taxi</h1>
+      <p
+        style={{
+          marginBottom: "8px",
+        }}
+      >
+        v0.1.0 | Made by <a href='https://piemadd.com/'>Piero</a>
       </p>
-      {loading ? (
-        <p>Loading...</p>
-      ) : (
+      {
         <>
-          <p>Last Updated: {lastUpdated.toLocaleString()}</p>
-          <p
-            style={{
-              textAlign: "center",
-              marginBottom: "8px",
-            }}
-          >
-            {runNumbers.length} trains are currently running
-          </p>
           <main>
             <div className='data-source-selector'>
               <button
@@ -168,7 +47,7 @@ const App = () => {
                   dataSource === "table" ? "data-source-selected" : undefined
                 }
               >
-                Table
+                List
               </button>
               <button
                 type='radio'
@@ -187,44 +66,112 @@ const App = () => {
               </button>
             </div>
             {dataSource === "table" ? (
-              <section className='headways'>
-                {Object.values(destinationHeadways).map((destination) => {
+              <section className='destinations'>
+                {Object.keys(taxiStations).map((stationKey) => {
+                  const station = taxiStations[stationKey];
                   return (
                     <div
-                      key={`${destination.line}-${destination.stationKey}`}
+                      className='station'
+                      key={stationKey}
                       style={{
-                        backgroundColor: lines[destination.line].color,
-                        color: lines[destination.line].textColor,
+                        backgroundColor: station.color,
+                        color: station.textColor,
                       }}
                     >
-                      <p>{lines[destination.line].name} Line towards</p>
-                      <h2>{destination.stationKey}</h2>
-                      {destination.numOfTrains === 1 ? (
-                        <p>Only train terminates</p>
-                      ) : null}
-                      <p
-                        style={{
-                          fontSize: "1.5rem",
-                        }}
-                      >
-                        {destination.headways}
+                      <h2>{station.name}</h2>
+                      <p>
+                        <a
+                          href={station.mapsLink}
+                          target='_blank'
+                          rel='noreferrer'
+                          style={{
+                            color: station.textColor,
+                          }}
+                        >
+                          Directions
+                        </a>
                       </p>
-                      {destination.numOfTrains === 1 ? null : (
-                        <p>
-                          {destination.numOfTrains}{" "}
-                          {destination.numOfTrains === 1 ? "train" : "trains"}{" "}
-                          running
-                        </p>
-                      )}
+                      <h3>Upcoming Departures:</h3>
+                      {Object.keys(station.to).map((destKey) => {
+                        const dest = station.to[destKey];
+                        const filteredDepartures = dest.departures.filter(
+                          (departure) => {
+                            return (
+                              new Date(departure).valueOf() >
+                              Date.now() - 1000 * 60 * 5
+                            );
+                          }
+                        );
+                        const departures = filteredDepartures.slice(0, 6);
+
+                        if (departures.length === 0) {
+                          return (
+                            <div key={destKey}>
+                              <h4>To {taxiStations[destKey].name}:</h4>
+                              <p>No upcoming departures</p>
+                            </div>
+                          );
+                        }
+
+                        return (
+                          <div
+                            key={destKey}
+                            style={{
+                              backgroundColor: taxiStations[destKey].color,
+                              color: taxiStations[destKey].textColor,
+                            }}
+                          >
+                            <h4>To {taxiStations[destKey].name}:</h4>
+                            <p>
+                              Travel time: ~{station.to[destKey].duration} mins
+                            </p>
+                            <ul>
+                              {departures.map((departure) => {
+                                return (
+                                  <li key={departure}>
+                                    {dateFormatter.format(new Date(departure))}{" "}
+                                    <i>
+                                      (in{" "}
+                                      {hoursAndMinutesUntil(
+                                        new Date(departure)
+                                      )}
+                                      )
+                                    </i>
+                                  </li>
+                                );
+                              })}
+                            </ul>
+                          </div>
+                        );
+                      })}
                     </div>
                   );
                 })}
               </section>
             ) : null}
-            {dataSource === "map" ? <Map trains={trains} lines={lines} /> : null}
+            {dataSource === "map" ? <Map /> : null}
+            <p
+              style={{
+                textAlign: "center",
+                marginBottom: "16px",
+              }}
+            >
+              While this website was made for your convenience, it is
+              unofficial, has no affiliation with the Chicago Water Taxi nor
+              Wendella Boat Tours, and makes no guarentee for information
+              accuracy. For official information, please visit{" "}
+              <a
+                href='https://www.chicagowatertaxi.com'
+                target='_blank'
+                rel='noreferrer'
+              >
+                chicagowatertaxi.com
+              </a>
+              .
+            </p>
           </main>
         </>
-      )}
+      }
     </>
   );
 };

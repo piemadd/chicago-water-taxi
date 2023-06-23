@@ -26,6 +26,10 @@ main {
   padding: 0 8px 8px 8px;
 }
 
+a {
+  color: #fff;
+}
+
 .data-source-selector {
   display: flex;
   flex-direction: row;
@@ -63,17 +67,65 @@ main {
   background-color: #555 !important;
 }
 
-.headways {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  grid-gap: 4px;
-}
-
-.headways div {
-  padding: 8px;
-}
-
 .map {
   width: 100%;
   height: 75vh;
+}
+
+.maplibregl-popup-content {
+  background-color: #222 !important;
+  font-size: 1rem !important;
+}
+
+.maplibregl-popup-close-button {
+  padding: 4px 8px !important;
+  color: #fff !important;
+  font-size: 1.2rem !important;
+}
+
+.maplibregl-popup-content {
+  padding-right: 32px !important;
+}
+
+h3.station_popup {
+  margin-bottom: 8px;
+}
+
+h4.station_popup {
+  margin-top: 12px;
+  margin-bottom: 4px;
+}
+
+p.station_popup,
+li.station_popup {
+  margin-bottom: 2px;
+}
+
+li.station_popup {
+  margin-left: 16px;
+}
+
+.station h3 {
+  margin-bottom: 4px;
+}
+
+.station h4 {
+
+}
+
+.station p {
+}
+
+.station li {
+  margin-left: 16px;
+}
+
+.station {
+  padding: 0px 8px 2px 8px;
+  margin-bottom: 8px;
+}
+
+.station > div {
+  padding: 4px 8px 4px 8px;
+  margin-bottom: 8px;
 }
