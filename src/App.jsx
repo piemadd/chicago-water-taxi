@@ -39,7 +39,7 @@ const App = () => {
           marginBottom: "8px",
         }}
       >
-        v0.2.4 | Made by{" "}
+        v0.2.5 | Made by{" "}
         <a href='https://piemadd.com/' target='_blank' rel='noreferrer'>
           Piero
         </a>
@@ -177,7 +177,6 @@ const App = () => {
             <p
               style={{
                 textAlign: "center",
-                marginBottom: "16px",
               }}
             >
               While this website was made for your convenience, it is
@@ -193,7 +192,14 @@ const App = () => {
               </a>
               .
             </p>
-            <p>This site uses google analytics. </p>
+            <p
+              style={{
+                textAlign: "center",
+                marginBottom: "16px",
+              }}
+            >
+              This site uses google analytics.{" "}
+            </p>
           </main>
         </>
       }
