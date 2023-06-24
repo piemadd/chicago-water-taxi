@@ -39,7 +39,7 @@ const App = () => {
           marginBottom: "8px",
         }}
       >
-        v0.2.2 | Made by{" "}
+        v0.2.4 | Made by{" "}
         <a href='https://piemadd.com/' target='_blank' rel='noreferrer'>
           Piero
         </a>
