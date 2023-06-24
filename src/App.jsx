@@ -39,7 +39,7 @@ const App = () => {
           marginBottom: "8px",
         }}
       >
-        v0.2.1 | Made by{" "}
+        v0.2.2 | Made by{" "}
         <a href='https://piemadd.com/' target='_blank' rel='noreferrer'>
           Piero
         </a>
@@ -193,6 +193,7 @@ const App = () => {
               </a>
               .
             </p>
+            <p>This site uses google analytics. </p>
           </main>
         </>
       }
