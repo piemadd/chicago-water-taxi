@@ -39,7 +39,7 @@ const App = () => {
           marginBottom: "8px",
         }}
       >
-        v0.2.5 | Made by{" "}
+        v0.2.6 | Made by{" "}
         <a href='https://piemadd.com/' target='_blank' rel='noreferrer'>
           Piero
         </a>
@@ -126,7 +126,13 @@ const App = () => {
 
                           if (departures.length === 0) {
                             return (
-                              <div key={destKey}>
+                              <div
+                                key={destKey}
+                                style={{
+                                  backgroundColor: taxiStations[destKey].color,
+                                  color: taxiStations[destKey].textColor,
+                                }}
+                              >
                                 <h4>To {taxiStations[destKey].name}:</h4>
                                 <p>No upcoming departures</p>
                               </div>
